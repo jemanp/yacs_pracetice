@@ -2,6 +2,8 @@ from time import timezone
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+import  requests
+
 app = FastAPI()
 
 db = []
@@ -16,14 +18,14 @@ def root():
 
 @app.get('/cities')
 def get_cities():
-    result = []
+    results = []
     for city in db:
         strs = "http://worldtimeapi.org/api/timezone/America/New_York"
         r = requests.get(strs) # get ip address 
         cur_time = r.json()['datatime']
         results.append({'name':city['name'],'timezone':city['timezone'] , 'current_time':cur_time})
     
-    return result #return city created
+    return results #return city created
 
 
 @app.get('/cities/{city_id}')
@@ -35,12 +37,14 @@ def get_city(city_id: int):
     return {'name':city['name'],'timezone':city['timezone'] , 'current_time':cur_time}
     #return the list of dictionary 
     
-@app.get('/cities')
+@app.post('/cities')
 def create_city(city: City):
     db.append(city.dict())
     return db[-1] 
 
-#@app.get('/cities/{city_id}')
-#def delete_city(city_id: int):
-    
+#append list and delete pop
+@app.delete('/cities/{city_id}')
+def delete_city(city_id: int):
+    db.pop(city_id-1)
+    return {}
     
